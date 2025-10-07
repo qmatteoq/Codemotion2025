@@ -1,0 +1,16 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="M365Agent/M365Agent.atkproj" Type="a9e3f50b-275e-4af7-adce-8be12d41e305">
+    <Platform Project="AnyCPU" />
+    <Deploy />
+  </Project>
+  <Project Path="ReportScenario.Api/ReportScenario.Api.csproj" />
+  <Project Path="ReportScenario.AppHost/ReportScenario.AppHost.csproj" Id="8bdafd98-397e-4605-a4bc-dfcd856b6807" />
+  <Project Path="ReportScenario.ServiceDefaults/ReportScenario.ServiceDefaults.csproj" />
+  <Project Path="ReportScenario/ReportScenario.csproj" />
+  <Project Path="ReportScenarioAgent/ReportScenarioAgent.csproj" />
+</Solution>
