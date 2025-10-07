@@ -21,36 +21,22 @@ var configuration = new ConfigurationBuilder()
 
 var openAIEndpoint = configuration["OpenAIEndpoint"] ?? throw new InvalidOperationException("Foundry endpoint not configured");
 
+//setting up the client
+
 var client = new AzureOpenAIClient(
     new Uri(openAIEndpoint),
     new AzureCliCredential())
         .GetChatClient("gpt-4.1").AsIChatClient();
 
 
-RetrievalPlugin retrievalPlugin = new RetrievalPlugin(configuration);
-retrievalPlugin.Authenticate();
-
 var alphaVantageMcpUrl = configuration["AlphaVantage:Endpoint"] ?? throw new InvalidOperationException("Alpha Vantage MCP endpoint not configured");
 var alphaVantageApiKey = configuration["AlphaVantage:ApiKey"] ?? throw new InvalidOperationException("Alpha Vantage API key not configured");
 
 
-var marketResearcherAgent = new ChatClientAgent(client,
-    new ChatClientAgentOptions
-    {
-        Instructions = "You are a market researcher agent. The user will ask you to prepare a report about the products launched by a given a tech company. You must use **only** public data to prepare the report. Use it to get relevant pieces of information about the topic the user is asking you to prepare a report about.",
-        Name = "Market Researcher"
-    });
+RetrievalPlugin retrievalPlugin = new RetrievalPlugin(configuration);
+retrievalPlugin.Authenticate();
 
-var organizationalAgent = new ChatClientAgent(client,
-    new ChatClientAgentOptions
-    {
-        Instructions = "You are a researcher agent. You will receive in input a report about a tech company. You must enhance it with specific information related to the Contoso organization. You must use **only** organizational data to prepare the report. You have access to a tool that gives you access to organizational data about Contoso. Use it to get relevant pieces of information about the topic the user is asking you to prepare a report about.",
-        Name = "Enterprise Report Generator",
-        ChatOptions = new ChatOptions
-        {
-            Tools = [AIFunctionFactory.Create(retrievalPlugin.GetExtractsAsync)]
-        }
-    });
+//setting up the stock agent
 
 await using var localMcpClient = await McpClient.CreateAsync(new StdioClientTransport(new()
 {
@@ -78,6 +64,7 @@ var stockAgent = new ChatClientAgent(client,
         }
     });
 
+//setting up the researcher agent
 
 string foundryEndpoint = configuration["FoundryEndpoint"] ?? throw new InvalidOperationException("Foundry endpoint not configured");
 
@@ -85,7 +72,29 @@ var persistentAgentsClient = new PersistentAgentsClient(foundryEndpoint, new Azu
 var knowledgeAgent = await persistentAgentsClient.GetAIAgentAsync("asst_LcTEycPXtHWg3oUMi0KeXGEu");
 
 
-var workflow = AgentWorkflowBuilder.BuildSequential(marketResearcherAgent, organizationalAgent, stockAgent);
+// var marketResearcherAgent = new ChatClientAgent(client,
+//     new ChatClientAgentOptions
+//     {
+//         Instructions = "You are a market researcher agent. The user will ask you to prepare a report about the products launched by a given a tech company. You must use **only** public data to prepare the report. Use it to get relevant pieces of information about the topic the user is asking you to prepare a report about.",
+//         Name = "Market Researcher"
+//     });
+
+
+//setting up the enterprise researcher agent
+
+var organizationalAgent = new ChatClientAgent(client,
+    new ChatClientAgentOptions
+    {
+        Instructions = "You are a researcher agent. You will receive in input a report about a tech company. You must enhance it with specific information related to the Contoso organization. You must use **only** organizational data to prepare the report. You have access to a tool that gives you access to organizational data about Contoso. Use it to get relevant pieces of information about the topic the user is asking you to prepare a report about.",
+        Name = "Enterprise Report Generator",
+        ChatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(retrievalPlugin.GetExtractsAsync)]
+        }
+    });
+
+
+var workflow = AgentWorkflowBuilder.BuildSequential(knowledgeAgent, organizationalAgent, stockAgent);
 
 
 var workflowAgent = await workflow.AsAgentAsync("report-agent", "Report agent");
