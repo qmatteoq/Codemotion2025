@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReportScenario.ServiceDefaults")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eef3f644a751e029547da333d400c4748c27c1f5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d6014a9a5469ca669046a5aa9055ebebb15223ea")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReportScenario.ServiceDefaults")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReportScenario.ServiceDefaults")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
