@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Azure.AI.Agents.Persistent;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Agents.AI;
@@ -67,10 +68,11 @@ serviceCollection.AddLogging(loggingBuilder => loggingBuilder
 using var activitySource = new ActivitySource(SourceName);
 using var meter = new Meter(SourceName);
 
-var foundryEndpoint= builder.Configuration["FoundryEndpoint"] ?? throw new InvalidOperationException("Foundry endpoint not configured");
+var foundryEndpoint = builder.Configuration["FoundryEndpoint"] ?? throw new InvalidOperationException("Foundry endpoint not configured");
+var openAiEndpoint = builder.Configuration["OpenAIEndpoint"] ?? throw new InvalidOperationException("OpenAI endpoint not configured");
 
 var client = new AzureOpenAIClient(
-    new Uri(foundryEndpoint),
+    new Uri(openAiEndpoint),
     new AzureCliCredential())
         .GetChatClient("gpt-4.1")
         .AsIChatClient()
@@ -84,16 +86,13 @@ var client = new AzureOpenAIClient(
 builder.Services.AddOpenApi();
 builder.Services.AddChatClient(client);
 
-builder.AddAIAgent("MarketResearcher", (sp, key) =>
+
+var persistentAgentsClient = new PersistentAgentsClient(foundryEndpoint, new AzureCliCredential());
+var knowledgeAgent = await persistentAgentsClient.GetAIAgentAsync("asst_LcTEycPXtHWg3oUMi0KeXGEu");
+
+builder.AddAIAgent("Company Research Agent", (sp, key) =>
 {
-    var chatClient = sp.GetRequiredService<IChatClient>();
-    return new ChatClientAgent(client,
-        name: key,
-        instructions:
-        """
-        You are a market researcher agent. The user will ask you to prepare a report about the products launched by a given a tech company. You must use **only** public data to prepare the report. Use it to get relevant pieces of information about the topic the user is asking you to prepare a report about.
-        """
-    ).AsBuilder()
+     return knowledgeAgent.AsBuilder()
     .UseOpenTelemetry(SourceName)
     .Build();
 });
@@ -114,7 +113,7 @@ builder.AddAIAgent("EnterpriseResearcher", (sp, key) =>
         tools: [AIFunctionFactory.Create(retrievalPlugin.GetExtractsAsync)]
     ).AsBuilder()
     .UseOpenTelemetry(SourceName)
-    .Build();;
+    .Build(); ;
 });
 
 [Description("Return the price of the given stock")]
@@ -133,7 +132,7 @@ builder.AddAIAgent("StockPriceAgent", (sp, key) =>
         tools: [AIFunctionFactory.Create(GetStockPrice)]
     ).AsBuilder()
     .UseOpenTelemetry(SourceName)
-    .Build();;
+    .Build(); ;
 });
 
 var app = builder.Build();
@@ -142,7 +141,6 @@ var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
 var appLogger = loggerFactory.CreateLogger<Program>();
 
 app.MapDefaultEndpoints();
-
 
 
 // Configure the HTTP request pipeline.
@@ -154,7 +152,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapGet("/agent/chat", async (
-    [FromKeyedServices("MarketResearcher")] AIAgent marketResearcher,
+    [FromKeyedServices("Company Research Agent")] AIAgent marketResearcher,
     [FromKeyedServices("EnterpriseResearcher")] AIAgent organizationalAgent,
     [FromKeyedServices("StockPriceAgent")] AIAgent stockPriceAgent,
     string prompt) =>

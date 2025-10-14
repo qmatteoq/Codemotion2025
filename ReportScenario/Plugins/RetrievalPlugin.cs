@@ -69,8 +69,8 @@ public class RetrievalPlugin : IRetrievalPlugin
             if (result != null)
             {
                 Console.WriteLine("Retrieval response received successfully");
-                Console.WriteLine("\nResults:");
-                Console.WriteLine(result.RetrievalHits.Count.ToString());
+                Console.WriteLine($"\nResults: {result.RetrievalHits.Count}");
+                Console.WriteLine();
                 if (result.RetrievalHits != null)
                 {
                     foreach (var hit in result.RetrievalHits)
@@ -78,7 +78,6 @@ public class RetrievalPlugin : IRetrievalPlugin
                         Console.WriteLine(hit.WebUrl);
                         if (hit.Extracts != null && hit.Extracts.Any())
                         {
-                            Console.WriteLine("\nExtracts:");
                             foreach (var extract in hit.Extracts)
                             {
                                 extracts.Add(extract.Text);

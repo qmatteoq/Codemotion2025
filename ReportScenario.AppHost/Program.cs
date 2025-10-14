@@ -15,13 +15,6 @@ var tsAgent = builder.AddNpmApp("tsAgent", "../ReportScenario-TS", "dev:teamsfx"
 .WithReference(api)
 .WithHttpEndpoint(port: 3978, targetPort: 3978, isProxied: false);
 
-// var authToken = builder
-//     .AddParameter("ngrok-auth-token", builder.Configuration["ngrok-auth-token"], secret: true);
-
-// builder.AddNgrok("ngrok") // omit endpointPort to use random port
-//     .WithAuthToken(authToken)
-// //     .WithTunnelEndpoint(agent, "http")
-//     .WithTunnelEndpoint(tsAgent, "http");
 
 builder.AddDevTunnel("agent")
        .WithReference(agent)

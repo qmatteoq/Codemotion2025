@@ -58,8 +58,8 @@ var stockAgent = new ChatClientAgent(client,
         Name = "Stock Generator",
         ChatOptions = new ChatOptions
         {
-            // Tools = [.. mcpTools.Cast<AITool>()]
-            Tools = [AIFunctionFactory.Create(GetStockPrice)],
+            Tools = [.. mcpTools.Cast<AITool>()],
+            // Tools = [AIFunctionFactory.Create(GetStockPrice)],
             ResponseFormat = ChatResponseFormat.Text
         }
     });
@@ -70,15 +70,6 @@ string foundryEndpoint = configuration["FoundryEndpoint"] ?? throw new InvalidOp
 
 var persistentAgentsClient = new PersistentAgentsClient(foundryEndpoint, new AzureCliCredential());
 var knowledgeAgent = await persistentAgentsClient.GetAIAgentAsync("asst_LcTEycPXtHWg3oUMi0KeXGEu");
-
-
-// var marketResearcherAgent = new ChatClientAgent(client,
-//     new ChatClientAgentOptions
-//     {
-//         Instructions = "You are a market researcher agent. The user will ask you to prepare a report about the products launched by a given a tech company. You must use **only** public data to prepare the report. Use it to get relevant pieces of information about the topic the user is asking you to prepare a report about.",
-//         Name = "Market Researcher"
-//     });
-
 
 //setting up the enterprise researcher agent
 
@@ -104,7 +95,7 @@ var thread = workflowAgent.GetNewThread();
 
 
 string? previousAuthor = null;
-await foreach (var update in workflowAgent.RunStreamingAsync("Give me an overview of the key products launched by Microsoft in the last 10 years.", thread))
+await foreach (var update in workflowAgent.RunStreamingAsync("Give me an overview of the key products launched by Microsoft in the last 5 years.", thread))
 {
     if (previousAuthor != update.AuthorName)
     {
