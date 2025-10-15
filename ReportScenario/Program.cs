@@ -95,7 +95,7 @@ var thread = workflowAgent.GetNewThread();
 
 
 string? previousAuthor = null;
-await foreach (var update in workflowAgent.RunStreamingAsync("Give me an overview of the key products launched by Microsoft in the last 5 years.", thread))
+await foreach (var update in workflowAgent.RunStreamingAsync("Give me an overview of the key enterprise products and services launched by Microsoft in the last 5 years.", thread))
 {
     if (previousAuthor != update.AuthorName)
     {

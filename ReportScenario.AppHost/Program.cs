@@ -9,8 +9,6 @@ var agent = builder.AddProject<Projects.ReportScenarioAgent>("reportscenario-age
 .WithReference(api)
 .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development");
 
-
-
 var tsAgent = builder.AddNpmApp("tsAgent", "../ReportScenario-TS", "dev:teamsfx")
 .WithReference(api)
 .WithHttpEndpoint(port: 3978, targetPort: 3978, isProxied: false);
